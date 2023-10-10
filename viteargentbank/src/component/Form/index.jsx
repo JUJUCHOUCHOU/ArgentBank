@@ -1,29 +1,25 @@
 import React, { useState } from 'react';
-import { loginUser } from '../../Services/Api'; 
-import { loginSuccess } from '../../Services/userAction';
 import { useDispatch } from 'react-redux';
-//import { Link } from 'react-router-dom';
+import { loginSuccess, loginFail } from '../../Services/userState';
+import { useNavigate } from 'react-router-dom';
 
 function Form() {
-  console.log('Form')
-  const [userName, setUserName] = useState('');
-  const [userPassWord, setUserPassWord] = useState('');
-
+  const [userName, setUserName] = useState(''); //userName with useState
+  const [userPassWord, setUserPassWord] = useState(''); //userPassWord with useState
   const dispatch = useDispatch();
-  
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      // Appelez la fonction loginUser pour tenter de connecter l'utilisateur
-      const response = await loginUser(userName, userPassWord);
-  
-      // Si la connexion réussit, envoyez l'action Redux
+      // try connect ,
+      // if connect ok dispatch success
       dispatch(loginSuccess());
-      //envoyer vers la page de user
+      navigate('/user'); 
     } catch (erreur) {
-      // En cas d'erreur, affichez un message d'erreur à l'utilisateur
-      setMessageErreur('Identifiants incorrects. Veuillez réessayer.');
+      // if connect fail dispatch loginFail
+      dispatch(loginFail());
     }
   };
   

@@ -1,4 +1,10 @@
-const BASE_URL = 'http://localhost:3001/api/v1'; 
+const BASE_URL = 'http://localhost:3001/api/v1';
+
+// Fonction pour stocker le token d'authentification dans localStorage
+const storeAuthToken = (token) => {
+  localStorage.setItem('authToken', token);
+};
+
 // Requête POST pour la connexion
 export const loginUser = async (email, password) => { 
   try {
@@ -15,6 +21,10 @@ export const loginUser = async (email, password) => {
     }
 
     const data = await response.json();
+
+    // Stock le token d'authentification dans localStorage après la connexion réussie
+    storeAuthToken(data.token);
+
     return data;
   } catch (error) {
     throw error;
@@ -28,6 +38,7 @@ export const signupUser = async (userData) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Incluez le token d'authentification
       },
       body: JSON.stringify(userData),
     });
@@ -50,6 +61,7 @@ export const updateUserProfile = async (userData) => {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Incluez le token d'authentification
       },
       body: JSON.stringify(userData),
     });
@@ -65,12 +77,14 @@ export const updateUserProfile = async (userData) => {
   }
 };
 
+// Requête GET pour récupérer le profil utilisateur
 export const getUserProfile = async (userId) => {
   try {
     const response = await fetch(`${BASE_URL}/user/profile/${userId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Incluez le token d'authentification
       },
     });
 
