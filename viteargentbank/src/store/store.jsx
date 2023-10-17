@@ -1,8 +1,9 @@
+// store.js
 import { createStore, combineReducers } from 'redux';
-import {userReducer} from '../Services/userState'; 
+import { userReducer } from '../Services/userState';
 
 const rootReducer = combineReducers({
-  user: userReducer, 
+  user: userReducer,
 });
 
 const store = createStore(rootReducer);

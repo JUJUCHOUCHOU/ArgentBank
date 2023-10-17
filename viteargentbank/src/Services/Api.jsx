@@ -1,35 +1,34 @@
-const BASE_URL = 'http://localhost:3001/api/v1';
-
 // Fonction pour stocker le token d'authentification dans localStorage
 const storeAuthToken = (token) => {
   localStorage.setItem('authToken', token);
 };
 
-// Requête POST pour la connexion
-export const loginUser = async (email, password) => { 
+const BASE_URL = 'http://localhost:3001/api/v1';
+
+export const loginUser = async (email, password) => {
   try {
     const response = await fetch(`${BASE_URL}/user/login`, {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }), 
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
-      throw new Error('La requête a échoué.');
+      const error = await response.json();
+      throw new Error(error.message);
     }
 
     const data = await response.json();
-
-    // Stock le token d'authentification dans localStorage après la connexion réussie
-    storeAuthToken(data.token);
-
-    return data;
+    return data.token;
   } catch (error) {
     throw error;
   }
 };
+
+
 
 // Requête POST pour l'inscription
 export const signupUser = async (userData) => {
@@ -44,7 +43,14 @@ export const signupUser = async (userData) => {
     });
 
     if (!response.ok) {
-      throw new Error('La requête a échoué.');
+      // Gérez les erreurs de manière appropriée
+      if (response.status === 401) {
+        throw new Error('Authentification échouée. Veuillez vous reconnecter.');
+      } else if (response.status === 403) {
+        throw new Error('Accès refusé.');
+      } else {
+        throw new Error('Erreur inconnue.');
+      }
     }
 
     const data = await response.json();
@@ -67,7 +73,16 @@ export const updateUserProfile = async (userData) => {
     });
 
     if (!response.ok) {
-      throw new Error('La requête a échoué.');
+      // Gérez les erreurs de manière appropriée
+      if (response.status === 401) {
+        throw new Error('Authentification échouée. Veuillez vous reconnecter.');
+      } else if (response.status === 403) {
+        throw new Error('Accès refusé.');
+      } else if (response.status === 404) {
+        throw new Error('Utilisateur non trouvé.');
+      } else {
+        throw new Error('Erreur inconnue.');
+      }
     }
 
     const data = await response.json();
@@ -89,7 +104,16 @@ export const getUserProfile = async (userId) => {
     });
 
     if (!response.ok) {
-      throw new Error('La requête a échoué.');
+      // Gérez les erreurs de manière appropriée
+      if (response.status === 401) {
+        throw new Error('Authentification échouée. Veuillez vous reconnecter.');
+      } else if (response.status === 403) {
+        throw new Error('Accès refusé.');
+      } else if (response.status === 404) {
+        throw new Error('Utilisateur non trouvé.');
+      } else {
+        throw new Error('Erreur inconnue.');
+      }
     }
 
     const data = await response.json();

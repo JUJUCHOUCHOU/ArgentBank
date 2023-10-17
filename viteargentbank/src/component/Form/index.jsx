@@ -1,37 +1,35 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { loginSuccess, loginFail } from '../../Services/userState';
-import { useNavigate } from 'react-router-dom';
+import { loginSuccess, loginFail } from '../../Services/userState'; // Importez les actions
 
-function Form() {
-  const [userName, setUserName] = useState(''); //userName with useState
-  const [userPassWord, setUserPassWord] = useState(''); //userPassWord with useState
+function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // try connect ,
-      // if connect ok dispatch success
-      dispatch(loginSuccess());
-      navigate('/user'); 
-    } catch (erreur) {
-      // if connect fail dispatch loginFail
-      dispatch(loginFail());
+      const token = await loginUser(email, password);
+
+      // Mettez à jour le Redux store avec le token et marquez la connexion comme réussie
+      dispatch(loginSuccess(token));
+    } catch (error) {
+      // En cas d'échec de connexion, stockez l'erreur dans le Redux store
+      dispatch(loginFail(error.message));
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="input-wrapper">
-        <label htmlFor="username">Username</label>
+        <label htmlFor="email">Email</label>
         <input
           type="text"
-          id="username"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       <div className="input-wrapper">
@@ -39,13 +37,9 @@ function Form() {
         <input
           type="password"
           id="password"
-          value={userPassWord}
-          onChange={(e) => setUserPassWord(e.target.value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
-      <div className="input-remember">
-        <input type="checkbox" id="remember-me" />
-        <label htmlFor="remember-me">Remember me</label>
       </div>
       <button className="sign-in-button" type="submit">
         Sign In
@@ -54,4 +48,4 @@ function Form() {
   );
 }
 
-export default Form;
+export default LoginForm;
