@@ -1,36 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import Footer from '../../component/Footer/index';
 import Nav from '../../component/Nav/index';
-import { useSelector } from 'react-redux';
-import { getUserProfile } from '../../Services/Api';
 import Account from '../../component/Account/index';
 
+
 function User() {
-  const { userId } = useParams();
   const [userData, setUserData] = useState(null);
-  const isAuthenticated = useSelector((state) => state.isAuthenticated);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log('Fetching user profile for userId:', userId);
-
-    if (isAuthenticated !== undefined && isAuthenticated) {
-      getUserProfile(userId) 
-        .then((data) => {
-          console.log('User data received:', data);
-          setUserData(data);
-        })
-        .catch((error) => {
-          console.error('Erreur lors de la récupération des données du profil :', error);
-        });
+    // Récupérez les données de l'utilisateur à l'aide de votre service ou de votre API
+    // Vous devez adapter cette partie en fonction de votre backend
+    // Cela suppose que vous avez une fonction getUserProfile qui renvoie les données de l'utilisateur
+    getUserProfile()
+      .then((data) => {
+        setUserData(data);
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la récupération des données du profil :', error);
+      });
+  }, []);
+  const updateUserProfile = async (userData, dispatch) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Incluez le token d'authentification
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        dispatch(loginFail(error.message)); // Dispatch en cas d'échec
+        return;
+      }
+  
+      const data = await response.json();
+      dispatch(loginSuccess(data.token)); // Dispatch en cas de succès
+    } catch (error) {
+      dispatch(loginFail(error.message)); // Dispatch en cas d'erreur
     }
-  }, [userId, isAuthenticated]);
+  };
+  const handleEdit = () => {
+    // Mettez en place la logique pour mettre à jour les informations du profil de l'utilisateur
+    const updatedData = /* Les données mises à jour */
+    updateUserProfile(updatedData, dispatch);
+  }
 
-  console.log('Rendering User component with userData:', userData);
-
-  // Si les données de l'utilisateur ne sont pas encore disponibles, userData sera null
   if (!userData) {
-    return null; // Le composant ne rend rien en attendant les données
+    return <div>No user data available</div>;
   }
 
   const { firstName, lastName } = userData;
@@ -41,7 +64,7 @@ function User() {
         <Nav />
         <div className="header">
           <h1>Welcome back {firstName} {lastName}</h1>
-          <button className="edit-button" onClick={submit}>
+          <button className="edit-button" onClick={handleEdit}>
             Edit Name
           </button>
         </div>

@@ -1,23 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { loginSuccess, loginFail } from '../../Services/userState'; // Importez les actions
+import { loginSuccess } from '../../Services/userState';
 
-function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function Form() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-
+//click call api for login and password, if ok, go to userPage and dispatch 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const token = await loginUser(email, password);
-
-      // Mettez à jour le Redux store avec le token et marquez la connexion comme réussie
+      const response = await fetch("http://localhost:3001/api/v1/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        throw new Error("An error occurred while signing in.");
+      }
+      const data = await response.json();
+      console.log(data);
+      const token = data.body.token;
       dispatch(loginSuccess(token));
+      navigate('/user');
     } catch (error) {
-      // En cas d'échec de connexion, stockez l'erreur dans le Redux store
-      dispatch(loginFail(error.message));
+      console.error(error);
     }
   };
 
@@ -48,4 +59,4 @@ function LoginForm() {
   );
 }
 
-export default LoginForm;
+export default Form;
