@@ -1,72 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
 import Footer from '../../component/Footer/index';
 import Nav from '../../component/Nav/index';
 import Account from '../../component/Account/index';
+import { getUserProfile, updateUserProfile } from '../../Services/index';
+import { useSelector } from 'react-redux';
+
 
 
 function User() {
-  const [userData, setUserData] = useState(null);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const [userProfile, setUserProfile] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedName, setUpdatedName] = useState('');
 
-  useEffect(() => {
-    // Récupérez les données de l'utilisateur à l'aide de votre service ou de votre API
-    // Vous devez adapter cette partie en fonction de votre backend
-    // Cela suppose que vous avez une fonction getUserProfile qui renvoie les données de l'utilisateur
-    getUserProfile()
-      .then((data) => {
-        setUserData(data);
-      })
-      .catch((error) => {
-        console.error('Erreur lors de la récupération des données du profil :', error);
-      });
-  }, []);
-  const updateUserProfile = async (userData, dispatch) => {
+  const authToken = useSelector(store=>store.user.token); 
+
+  const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/user/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Incluez le token d'authentification
-        },
-        body: JSON.stringify(userData),
-      });
-  
-      if (!response.ok) {
-        const error = await response.json();
-        dispatch(loginFail(error.message)); // Dispatch en cas d'échec
-        return;
-      }
-  
-      const data = await response.json();
-      dispatch(loginSuccess(data.token)); // Dispatch en cas de succès
+      const data = await getUserProfile(authToken);
+      setUserProfile(data.body);
     } catch (error) {
-      dispatch(loginFail(error.message)); // Dispatch en cas d'erreur
+      console.error('Erreur lors de la récupération des données du profil :', error);
     }
   };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
   const handleEdit = () => {
-    // Mettez en place la logique pour mettre à jour les informations du profil de l'utilisateur
-    const updatedData = /* Les données mises à jour */
-    updateUserProfile(updatedData, dispatch);
-  }
+    setIsEditing(true);
+  };
 
-  if (!userData) {
-    return <div>No user data available</div>;
-  }
+  const handleSave = async () => {
+    try {
+      const updatedProfileData = { ...userProfile, name: updatedName };
+      await updateUserProfile(authToken, updatedProfileData);
+      // Réactualiser le profil après la modification
+      await fetchUserProfile();
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du profil :', error);
+    }
+  };
 
-  const { firstName, lastName } = userData;
+  const { firstName, lastName, name } = userProfile;
 
   return (
     <div className="transaction main bg-dark">
       <main className="main bg-dark">
         <Nav />
         <div className="header">
-          <h1>Welcome back {firstName} {lastName}</h1>
-          <button className="edit-button" onClick={handleEdit}>
-            Edit Name
-          </button>
+        <h1>Welcome back {name}</h1>
+          {isEditing ? (
+            <div>
+              <input
+                type="text"
+                value={updatedName}
+                onChange={(e) => setUpdatedName(e.target.value)}
+              />
+              <button onClick={handleSave}>Enregistrer</button>
+            </div>
+          ) : (
+            <div>
+              <button className="edit-button" onClick={handleEdit}>
+                Edit Name
+              </button>
+            </div>
+          )}
         </div>
         <h2 className="sr-only">Accounts</h2>
         <Account

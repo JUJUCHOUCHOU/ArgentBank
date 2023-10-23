@@ -6,7 +6,7 @@ import NotFound from '../src/pages/NotFound/index.jsx';
 import User from './pages/User/index.jsx';
 import './app.css';
 import { Provider } from 'react-redux';
-import store from '../src/store/store.jsx';
+import store from '../src/store/store.js';
 
 function App() {
   return (
