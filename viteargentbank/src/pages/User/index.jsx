@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import Footer from '../../component/Footer/index';
 import Nav from '../../component/Nav/index';
 import Account from '../../component/Account/index';
 import { getUserProfile, updateUserProfile } from '../../Services/index';
 import { useSelector } from 'react-redux';
-
-
+import dataUser from './data';
 
 function User() {
   const [userProfile, setUserProfile] = useState({});
   const [isEditing, setIsEditing] = useState(false);
-  const [updatedName, setUpdatedName] = useState('');
+  const [updatedUserName, setUpdatedUserName] = useState('');
 
-  const authToken = useSelector(store=>store.user.token); 
+  const authToken = useSelector(store => store.user.token);
 
+  // Déclaration de la fonction fetchUserProfile en dehors de useEffect
   const fetchUserProfile = async () => {
     try {
       const data = await getUserProfile(authToken);
@@ -24,8 +23,9 @@ function User() {
   };
 
   useEffect(() => {
+    // Appel de fetchUserProfile à l'intérieur de useEffect
     fetchUserProfile();
-  }, []);
+  }, [authToken]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -33,58 +33,57 @@ function User() {
 
   const handleSave = async () => {
     try {
-      const updatedProfileData = { ...userProfile, name: updatedName };
-      await updateUserProfile(authToken, updatedProfileData);
-      // Réactualiser le profil après la modification
-      await fetchUserProfile();
-      setIsEditing(false);
+      const updatedProfileData = { ...userProfile, userName: updatedUserName };
+      const response = await updateUserProfile(authToken, updatedProfileData);
+  
+      if (response.status === 200) {
+        console.log('Réponse de l\'API après la mise à jour :', response.body);
+        await fetchUserProfile();
+        setIsEditing(false);
+
+      } else {
+        console.error('Erreur lors de la mise à jour du profil :', response);
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du profil :', error);
     }
   };
+  
 
-  const { firstName, lastName, name } = userProfile;
+  const { firstName, lastName, userName } = userProfile;
 
   return (
     <div className="transaction main bg-dark">
       <main className="main bg-dark">
         <Nav />
         <div className="header">
-        <h1>Welcome back {name}</h1>
+          <h1>Welcome back {firstName + ' ' + lastName + ' ' + userName}</h1>
           {isEditing ? (
             <div>
               <input
                 type="text"
-                value={updatedName}
-                onChange={(e) => setUpdatedName(e.target.value)}
+                value={updatedUserName}
+                onChange={(e) => setUpdatedUserName(e.target.value)}
               />
-              <button onClick={handleSave}>Enregistrer</button>
+              <button className="edit-button" onClick={handleSave}>Enregistrer</button>
             </div>
           ) : (
             <div>
               <button className="edit-button" onClick={handleEdit}>
-                Edit Name
+                Edit Username
               </button>
             </div>
           )}
         </div>
         <h2 className="sr-only">Accounts</h2>
-        <Account
-          title={"Argent Bank Checking (x8349)"}
-          amount={"$2,082.79"}
-          description={"Available Balance"}
-        />
-        <Account
-          title={"Argent Bank Savings (x6712)"}
-          amount={"$10,928.42"}
-          description={"Available Balance"}
-        />
-        <Account
-          title={"Argent Bank Credit Card (x8349)"}
-          amount={"$184.30"}
-          description={"Current Balance"}
-        />
-        <Footer />
+        {dataUser.map((data, index) => (
+          <Account
+            key={index}
+            title={data.title}
+            amount={data.amount}
+            description={data.description}
+          />
+        ))}
       </main>
     </div>
   );
